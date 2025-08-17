@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor de Texto Universal ⚡</title>
+    <meta name="description" content="Conversor de texto y markdown online. Funciona 100% en tu navegador. Exporta a PDF, DOCX, PPTX, XLSX y más.">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.3.6/purify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        :root {
+            --primary-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            --mono-font: 'SF Mono', 'Menlo', 'Consolas', 'Courier New', monospace;
+            --background-color: #020412;
+            --container-bg: rgba(15, 18, 42, 0.7);
+            --textarea-bg: rgba(2, 4, 18, 0.8);
+            --preview-bg: #ffffff;
+            --text-color: #e2e8f0;
+            --preview-text-color: #1e293b;
+            --accent-1: #8A2BE2;
+            --accent-2: #4169E1;
+            --accent-gradient: linear-gradient(45deg, var(--accent-1), var(--accent-2));
+            --border-color: rgba(100, 116, 139, 0.3);
+            --shadow-color: rgba(0, 0, 0, 0.5);
+            --border-radius: 16px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes auroraGlow {
+            0% { border-color: rgba(138, 43, 226, 0.5); box-shadow: 0 0 15px rgba(138, 43, 226, 0.2); }
+            50% { border-color: rgba(65, 105, 225, 0.7); box-shadow: 0 0 25px rgba(65, 105, 225, 0.3); }
+            100% { border-color: rgba(138, 43, 226, 0.5); box-shadow: 0 0 15px rgba(138, 43, 226, 0.2); }
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--primary-font);
+            background-color: var(--background-color);
+            /* FONDO INCRUSTADO EN BASE64: GARANTIZA QUE SIEMPRE FUNCIONE */
+            background-image: url('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxISEhUSEhIVFRUVFRUVFRUVFRUVFRUVFRUWFhUVFRUYHSggGBolHRUVITEhJSkrLi4uFx8zODMtNygtLisBCgoKDg0OGxAQGy0lICUtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLf/AABEIALcBEwMBIgACEQEDEQH/xAAcAAACAgMBAQAAAAAAAAAAAAAFBgMEAAIHAQj/xABEEAACAQMCAwUFBgQEAwUJAAABAgMABBESIQUxQVETImFxgZEGMqGxwdHwFEJSYnLhI4KS8QcVY6Ky0jNDU3ODwhf/xAAaAQEAAwEBAQAAAAAAAAAAAAAAAQIDBAUG/8QALhEAAgIBAwIDCAIDAAAAAAAAAAECEQMSITFBUWETInGBkaGxwfAFEtHhIzJC/9AAs+sJLe2mMEc7xRl4wcF1GSAeR8fKstbe0do8iIbqLcxCjnjJ4HPFdt9qR/8ACbv/AKcn/wAq41wzYI8SKDypYfyIq1FGVspS2tIpWvLdXV1kQqwBUg8EHgivtSWyqMliABkkngAUmLNfVq2/thYRzNFNdRI6MVYMcEMDgjgVlLfbS1lZkhu4HZQSVRwxAHU46Ugsk0rVTWVv/wA6T/iH/ep/DdrHcxLLC4eNxlWHQ0gH6UpSgBSlKAUpSgBSlKAUpSgBSlKAUpSgBSlKAUpSgBSlKAUpSgBSlKAUpSgBSlKAUpSgBSlKAUpSgBSlKAUpSgFVvaP8A8Jd/+nJ/8qnqt7R/+Eu//Tk/+VSA4jZqjP8AEr+v8jVna2u3y/y/M1W2ar8S/r/I1aWsPdv5/wAjVqMmzqfsV2iF3B7pIwW5hGScZzGSeR4r1+zvaY20iWTuTA5AjJ5MTngY8D/nSse0O2E2M1tIuQoBjYdHXkAjzHH8qk7W7S/SIUnAAc4WRR0cdfy5qN2jZxdM63WvZz/wB5W/8A1l/9wqh2P2wNjM8E6sbcudoA5aJuAwHkRg/zq39nP8A3lb/APWX/wBwq12l2VhvFCzLz0dejL5g1NtCjZ1azvY541lheOSNhkMhBB/57V+tcGuvZneWshmsZmjJOQm7KN5gMOB+FR5PZ/tiTzI/5YFRKyNG6O00rnP8A+l9pObk/V/+qnsb7Pbq2u4pZJ1aJWyyhmJIwRwCMDA5osGx0WlKUgFeHr3Xh6APsKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgBSlKAUpSgBSlKAUpSgBSlKAUpSgBSlKAVW9ov8Awl3/AOlJ/wDKrGq3tF/4S7/9KT/5VJBxGzVXiX9f5GrSzg5b9f41W2ar8S/r/I1aWcPLfr/Gq0ZJlfbO1NleyHlL8MjeLDhx+gH41nO1OyG2vJzu5hIzHwY7kfoR+lKlRNWi17NdpraXD6NMfNjATnpInAx58cV1GuS9puypgkW9gBCswMgXqjcgP8AryNa3sX2rlu4FYcOBtkTwYdRHkcigtOzVja3UV5brIpzwwHow6g1a1zvtzsprd/tG3BUOd5C/K443Dz/WpOx/bGi4W3vQVlUYMoGVIGOWHUHxzQG50rnHtxrSeCOAW00kRZm3GNipPABgir3sF2TdWszz3MrvIVUIXcsTk8kA9OlWmhcGNKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgBSlKAUpSgFKUoBSlKAUpSgFVvaL/wl3/6Un/yqyqp+0xE2N0SAWEUhA8SBwKQHFbJVeJf1/katLKBlv1/jVayVeJf1/katLLDy36/xrRGTZJYWRklRB1YD8uT/CofbCx8y029Gikj9MVb9g7Pe/TP/pIzIf18sfzqh9qV5vuViB+SJAfNiMn/ACFKQG67PWQuLS3l8YlJ8yOD+YNZHtfs2bZ1zLazkWzsS6ZwELclWHQAn8s1tOxVn5FjbIeoQE+bck/max/2lQ7w1jKOhZ4iTyORuA/Q0wIdg9tX0+4R1YtAWCyRE5UqTgkeBHUV2yKVXVXQhlYAqRyCDyCK4b2r2FNYTeZHdJ/qpo+QP9YdQav9j9uWtwFtrwpFIARZCQEkxwN2eAfPikaNnUKi31jFcxNFPGskbDBVhmpVKQzk/aT2atCGuLESxnkxE70/wnqP1pkfYPtI5/r6D02r/AAwK6zSq8qNHJz/2U7O3VtcSS3FwsyFMLhmbknnkgYxir/SlSApSlIBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBUXaNiLq3lgY4EiMm7GdueDjzqVSgOK7P8AYi/juInmt0VEkVmYSIQFByThTk8DpWkkt1IVTz0A4/hUrbv2k2dnIYppWMgAJREZyM9MgcA+dVx9r2xwf8AWS/9h6UWDRk+2OwbiFzdwKzxqd0ipzJFg5LAHqvjyPStV9me3v3Ld1MSLaUgEnpG/Rh5Hof5VYJ7WtiT/AKyX/sPVVtr2sbKaGSJEuMuCoxHxyMHqelCaCjt9KgtLpLiJJozlHUMp8iKmpAKUpQClKUApSlAKUpQClKUApSlAKUpQClKUApSlAKUpQClKUApSlAKUpQClKUApSlAKUpQClKUApSlAKUpQClKUApSlAKUpQHJO1/s/uLq+mnjkhCSPuAZmDAADg4UjpWHb2L34/8AEXX1m/8Adrc+1b2mPZMLO0IFy67nlPMcYPygDozHnjkAeNSvs82jZX1u97Pbw/S3ZllkKBpAw+TDEZxjjHTFGxo58P8Apfvz1e6+s/8A7a1HZXsXu7a9guHkuCkT7yGdiDgHjgYrtdKLEFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSuGdv8A2qXkN9cQWjRxxwMY/kVi7rwzEk9CcgYxgV87C+1i9mv7WC6aN453EZ+RVKM3yggjrkgHPrQHY6UpQClKUApSlAKUpQClKUApSlAKUpQClKUApSlAKUpQClKUApSlAKUpQClKUApSlAKUpQClKUApSlAKUpQClKUApSlAKUpQClKUApSlAKUpQHziub+z7tRd3O0b6CeUvBF5nlrgAJvZcYAyflA5ro9cD9jP/ADG2h+Ev/wAT0gO+0pSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBXBvsYx/wAxtofhL/8AE9dd25tJ7OymuII/NkjQuqYJyQM9Bk464HOK5T9i/Z1zCLy7uI3h+kGMRpIpRiqbiWIPIzuGM88GgOz0pSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoBSlKAUpSgFKUoD/9k=');
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 1500px;
+            height: calc(100vh - 40px);
+            background: var(--container-bg);
+            backdrop-filter: blur(25px) saturate(150%);
+            -webkit-backdrop-filter: blur(25px) saturate(150%);
+            border-radius: var(--border-radius);
+            border: 2px solid;
+            animation: fadeIn 1s ease-out, auroraGlow 6s infinite linear;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .controls-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 24px;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        h1 { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.5px; }
+        
+        .controls-group { display: flex; align-items: center; gap: 12px; }
+
+        button, .file-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            padding: 9px 16px;
+            border-radius: 8px;
+            font-family: var(--primary-font);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .file-label {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+        
+        .file-label:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        #file-input { display: none; }
+
+        select {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 9px 16px;
+            border-radius: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23e2e8f0' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+            transition: all 0.25s ease;
+        }
+        
+        select:hover { border-color: var(--accent-2); }
+
+        #download-btn {
+            color: white;
+            background-image: var(--accent-gradient);
+            background-size: 200% auto;
+        }
+        #download-btn:hover {
+            background-position: right center;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(65, 105, 225, 0.3);
+        }
+        #download-btn:active { transform: scale(0.98); }
+
+        .editor-container {
+            display: flex;
+            flex-grow: 1;
+            min-height: 0;
+        }
+
+        .editor-pane, .preview-pane {
+            width: 50%;
+            height: 100%;
+            padding: 12px;
+            overflow-y: auto;
+        }
+        
+        .editor-pane { border-right: 1px solid var(--border-color); }
+
+        #editor {
+            width: 100%;
+            height: 100%;
+            background-color: var(--textarea-bg);
+            color: var(--text-color);
+            border: 1px solid transparent;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: var(--mono-font);
+            font-size: 14px;
+            line-height: 1.7;
+            resize: none;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        #editor:focus {
+            outline: none;
+            border-color: var(--accent-2);
+            box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.2);
+        }
+
+        #preview {
+            background-color: var(--preview-bg);
+            color: var(--preview-text-color);
+            border-radius: 8px;
+            padding: 15px 25px;
+            height: 100%;
+            overflow-y: auto;
+        }
+        
+        #preview h1, #preview h2, #preview h3 { border-bottom: 1px solid #e2e8f0; padding-bottom: 0.3em; margin-top: 24px; margin-bottom: 16px; }
+        #preview p { margin-bottom: 16px; line-height: 1.7; }
+        #preview a { color: var(--accent-2); text-decoration: none; font-weight: 500;}
+        #preview a:hover { text-decoration: underline; }
+        #preview code { background-color: #f1f5f9; padding: .2em .4em; margin: 0; font-size: 87.5%; border-radius: 6px; font-family: var(--mono-font); }
+        #preview pre { background-color: #f1f5f9; padding: 16px; border-radius: 6px; overflow-x: auto; margin-bottom: 1em; }
+        #preview table { width: 100%; border-collapse: collapse; margin-bottom: 1em; }
+        #preview th, #preview td { border: 1px solid #cbd5e1; padding: 8px 12px; }
+
+        @media (max-width: 900px) {
+            body { padding: 0; }
+            .main-container { height: 100vh; border-radius: 0; border-left: none; border-right: none;}
+            .controls-bar { flex-direction: column; padding: 15px; }
+            .editor-container { flex-direction: column; }
+            .editor-pane, .preview-pane { width: 100%; height: 50%; }
+            .editor-pane { border-right: none; border-bottom: 1px solid var(--border-color); }
+        }
+    </style>
+</head>
+<body>
+    <main class="main-container">
+        <header class="controls-bar">
+            <h1 title="Conversor de Texto Universal">⚡ Conversor Universal</h1>
+            <div class="controls-group">
+                <label for="file-input" class="file-label" title="Cargar .txt o .md">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    Cargar Archivo
+                </label>
+                <input type="file" id="file-input" accept=".txt,.md,.markdown">
+                <select id="export-format">
+                    <option value="pdf">Exportar como PDF</option>
+                    <option value="docx">Exportar como DOCX</option>
+                    <option value="pptx">Exportar como PPTX</option>
+                    <option value="xlsx">Exportar como XLSX</option>
+                    <option value="csv">Exportar como CSV</option>
+                    <option value="md">Descargar MarkDown (.md)</option>
+                    <option value="txt">Descargar Texto (.txt)</option>
+                </select>
+                <button id="download-btn">Convertir y Descargar</button>
+            </div>
+        </header>
+
+        <div class="editor-container">
+            <section class="editor-pane">
+                <textarea id="editor" placeholder="Escribe o pega tu texto en Markdown aquí..."></textarea>
+            </section>
+            <section class="preview-pane">
+                <div id="preview"></div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+    (() => {
+        const editor = document.getElementById('editor');
+        const preview = document.getElementById('preview');
+        const fileInput = document.getElementById('file-input');
+        const exportFormat = document.getElementById('export-format');
+        const downloadBtn = document.getElementById('download-btn');
+
+        // --- DIAGNÓSTICO INICIAL: VERIFICA SI LAS LIBRERÍAS CARGARON ---
+        if (typeof marked === 'undefined' || typeof DOMPurify === 'undefined') {
+            preview.innerHTML = `<div style="padding: 20px; text-align: center; color: #b91c1c; background-color: #fee2e2; border-radius: 8px;">
+                <h2>Error Crítico de Carga</h2>
+                <p>Las librerías para la previsualización no pudieron cargarse. Revisa tu conexión a internet o si alguna extensión del navegador (como un bloqueador de anuncios) está impidiendo la carga de scripts.</p>
+            </div>`;
+            return;
+        }
+        
+        marked.setOptions({ breaks: true, gfm: true });
+
+        const updatePreview = () => {
+            try {
+                const cleanHtml = DOMPurify.sanitize(marked.parse(editor.value));
+                preview.innerHTML = cleanHtml;
+            } catch (e) {
+                preview.innerHTML = `<p style="color:red;">Error al procesar Markdown: ${e.message}</p>`;
+            }
+        };
+
+        const handleFileUpload = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                editor.value = e.target.result;
+                updatePreview();
+            };
+            reader.readAsText(file);
+        };
+        
+        const getFileName = () => `documento-${new Date().toISOString().slice(0, 10)}`;
+
+        const exportActions = {
+            txt: () => triggerDownload(new Blob([editor.value], { type: 'text/plain;charset=utf-8' }), `${getFileName()}.txt`),
+            md: () => triggerDownload(new Blob([editor.value], { type: 'text/plain;charset=utf-8' }), `${getFileName()}.md`),
+            pdf: () => {
+                if (typeof html2pdf === 'undefined') return alert('Error: Librería PDF no disponible.');
+                const content = `<div style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.6;">${preview.innerHTML}</div>`;
+                html2pdf().from(content).set({ margin: 15, filename: `${getFileName()}.pdf`, jsPDF: { unit: 'mm', format: 'a4' } }).save();
+            },
+            docx: () => {
+                if (typeof docx === 'undefined') return alert('Error: Librería DOCX no disponible.');
+                const { Document, Packer, Paragraph, TextRun, HeadingLevel } = docx;
+                const docChildren = editor.value.split('\n').map(line => {
+                    if (line.startsWith('# ')) return new Paragraph({ heading: HeadingLevel.HEADING_1, text: line.substring(2) });
+                    if (line.startsWith('## ')) return new Paragraph({ heading: HeadingLevel.HEADING_2, text: line.substring(3) });
+                    return new Paragraph({ children: [new TextRun(line)] });
+                });
+                const doc = new Document({ sections: [{ children: docChildren }] });
+                Packer.toBlob(doc).then(blob => triggerDownload(blob, `${getFileName()}.docx`));
+            },
+            pptx: () => {
+                if (typeof PptxGenJS === 'undefined') return alert('Error: Librería PPTX no disponible.');
+                const pptx = new PptxGenJS();
+                const slidesContent = editor.value.split(/\n---\n/);
+                slidesContent.forEach(slideText => {
+                    if (!slideText.trim()) return;
+                    const slide = pptx.addSlide();
+                    const lines = slideText.trim().split('\n');
+                    slide.addText(lines[0] || 'Diapositiva', { x: 0.5, y: 0.25, w: '90%', fontSize: 28, bold: true });
+                    if (lines.length > 1) {
+                        slide.addText(lines.slice(1).join('\n'), { x: 0.5, y: 1.5, w: '90%', h: '75%', fontSize: 16, bullet: true });
+                    }
+                });
+                pptx.writeFile({ fileName: `${getFileName()}.pptx` });
+            },
+            xlsx: (format = 'xlsx') => {
+                if (typeof XLSX === 'undefined') return alert('Error: Librería XLSX no disponible.');
+                const lines = editor.value.split('\n').map(line => line.split(',').map(cell => cell.trim()));
+                const ws = XLSX.utils.aoa_to_sheet(lines);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Datos');
+                XLSX.writeFile(wb, `${getFileName()}.${format}`);
+            },
+            csv: () => exportActions.xlsx('csv'),
+        };
+
+        const handleDownload = () => {
+            const format = exportFormat.value;
+            try {
+                exportActions[format] ? exportActions[format]() : alert('Formato no soportado.');
+            } catch (error) {
+                console.error(`Error al exportar a ${format}:`, error);
+                alert(`Ocurrió un error al exportar como ${format.toUpperCase()}. Revisa la consola para más detalles.`);
+            }
+        };
+
+        const triggerDownload = (blob, filename) => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+
+        editor.addEventListener('input', updatePreview);
+        fileInput.addEventListener('change', handleFileUpload);
+        downloadBtn.addEventListener('click', handleDownload);
+
+        editor.value = `# ¡Bienvenido al Conversor Universal! 🚀
+
+Esto funciona. Pega tu Markdown aquí y la magia ocurrirá a la derecha.
+
+## Funcionalidades Clave
+- ✅ **Previsualización en tiempo real** (¡Arreglado!)
+- 📂 **Carga de archivos locales**
+- 导出 **Exportación Multi-formato**
+
+---
+
+### Pro-Tip para PowerPoint (PPTX)
+Usa \`---\` en una línea para crear una nueva diapositiva.
+La primera línea será el título.`;
+        updatePreview();
+
+    })();
+    </script>
+</body>
+</html>
